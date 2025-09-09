@@ -3,8 +3,8 @@ export interface User {
   email: string;
   displayName: string | null;
   photoURL: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Board {
@@ -13,8 +13,8 @@ export interface Board {
   description: string;
   ownerId: string;
   members: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   isPublic: boolean;
   backgroundColor?: string;
 }
@@ -24,29 +24,43 @@ export interface List {
   title: string;
   boardId: string;
   position: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Card {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   listId: string;
   position: number;
   labels: Label[];
   assignees: string[];
-  dueDate?: Date;
+  dueDate?: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  estimatedHours?: number;
+  timeSpent?: number;
+  checklist?: ChecklistItem[];
+  coverImage?: string;
+  isArchived?: boolean;
   attachments: Attachment[];
   createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
 }
 
 export interface Label {
   id: string;
   name: string;
   color: string;
+  boardId?: string;
 }
 
 export interface Attachment {
@@ -106,6 +120,12 @@ export interface ListsState {
 
 export interface CardsState {
   cards: Card[];
+  loading: boolean;
+  error: string | null;
+}
+
+export interface LabelsState {
+  labels: Label[];
   loading: boolean;
   error: string | null;
 }

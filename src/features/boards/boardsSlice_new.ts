@@ -53,12 +53,7 @@ export const fetchBoards = createAsyncThunk(
 
 export const createBoard = createAsyncThunk(
   'boards/createBoard',
-  async (boardData: { 
-    title: string; 
-    description: string; 
-    ownerId: string;
-    template?: any; // BoardTemplate from boardTemplates
-  }, { rejectWithValue }) => {
+  async (boardData: { title: string; description: string; ownerId: string }, { rejectWithValue }) => {
     try {
       console.log('Creating board:', boardData);
       
@@ -72,53 +67,13 @@ export const createBoard = createAsyncThunk(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isPublic: false,
-        backgroundColor: boardData.template?.backgroundColor || '',
       };
       
       console.log('Board created:', newBoard);
-      return { board: newBoard, template: boardData.template };
+      return newBoard;
     } catch (error) {
       console.error('Error creating board:', error);
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to create board');
-    }
-  }
-);
-
-export const updateBoard = createAsyncThunk(
-  'boards/updateBoard',
-  async (boardData: { id: string; title: string; description: string; isPublic?: boolean; backgroundColor?: string }, { rejectWithValue }) => {
-    try {
-      console.log('Updating board:', boardData);
-      
-      // Simulate update with mock data
-      const updatedBoard = {
-        ...boardData,
-        updatedAt: new Date().toISOString(),
-      };
-      
-      console.log('Board updated:', updatedBoard);
-      return updatedBoard;
-    } catch (error) {
-      console.error('Error updating board:', error);
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update board');
-    }
-  }
-);
-
-export const deleteBoard = createAsyncThunk(
-  'boards/deleteBoard',
-  async (boardId: string, { rejectWithValue }) => {
-    try {
-      console.log('Deleting board:', boardId);
-      
-      // Simulate deletion
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      console.log('Board deleted:', boardId);
-      return boardId;
-    } catch (error) {
-      console.error('Error deleting board:', error);
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete board');
     }
   }
 );
@@ -157,38 +112,9 @@ const boardsSlice = createSlice({
       })
       .addCase(createBoard.fulfilled, (state, action) => {
         state.loading = false;
-        state.boards.unshift(action.payload.board);
+        state.boards.unshift(action.payload);
       })
       .addCase(createBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Update board
-      .addCase(updateBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateBoard.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.boards.findIndex(board => board.id === action.payload.id);
-        if (index !== -1) {
-          state.boards[index] = { ...state.boards[index], ...action.payload };
-        }
-      })
-      .addCase(updateBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Delete board
-      .addCase(deleteBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteBoard.fulfilled, (state, action) => {
-        state.loading = false;
-        state.boards = state.boards.filter(board => board.id !== action.payload);
-      })
-      .addCase(deleteBoard.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

@@ -1,15 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { User, AuthState } from '../../types';
-import { auth } from '../../services/firebase';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  signInWithPopup,
-  GoogleAuthProvider,
-  updateProfile,
-} from 'firebase/auth';
+import { authService } from '../../services/auth';
 
 const initialState: AuthState = {
   user: null,
@@ -19,55 +11,31 @@ const initialState: AuthState = {
 
 export const loginWithEmail = createAsyncThunk(
   'auth/loginWithEmail',
-  async ({ email, password }: { email: string; password: string }) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return {
-      id: userCredential.user.uid,
-      email: userCredential.user.email!,
-      displayName: userCredential.user.displayName,
-      photoURL: userCredential.user.photoURL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as User;
+  async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
+    return await authService.signIn(email, password, rememberMe || false);
   }
 );
 
 export const registerWithEmail = createAsyncThunk(
   'auth/registerWithEmail',
   async ({ email, password, displayName }: { email: string; password: string; displayName: string }) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, { displayName });
-    
-    return {
-      id: userCredential.user.uid,
-      email: userCredential.user.email!,
-      displayName,
-      photoURL: userCredential.user.photoURL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as User;
+    return await authService.signUp(email, password, displayName);
   }
 );
 
 export const loginWithGoogle = createAsyncThunk(
   'auth/loginWithGoogle',
   async () => {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    return {
-      id: userCredential.user.uid,
-      email: userCredential.user.email!,
-      displayName: userCredential.user.displayName,
-      photoURL: userCredential.user.photoURL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as User;
+    return await authService.signInWithGoogle();
   }
 );
 
-export const logout = createAsyncThunk('auth/logout', async () => {
-  await signOut(auth);
-});
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async () => {
+    await authService.signOut();
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',

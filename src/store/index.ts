@@ -3,6 +3,7 @@ import authReducer from '../features/auth';
 import boardsReducer from '../features/boards';
 import listsReducer from '../features/lists';
 import cardsReducer from '../features/cards';
+import labelsReducer from '../features/labels';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     boards: boardsReducer,
     lists: listsReducer,
     cards: cardsReducer,
+    labels: labelsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
