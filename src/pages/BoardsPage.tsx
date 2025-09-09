@@ -8,10 +8,11 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui';
 import { BoardCard } from '../components/boards';
 import { EditBoardModal } from '../components/boards/EditBoardModal';
-import { BoardTemplateModal } from '../components/boards/BoardTemplateModal';
+import { CreateBoardModal } from '../components/modals/CreateBoardModal';
+import { BoardSettingsModal } from '../components/modals/BoardSettingsModal';
 import { Header } from '../components/layout';
-import type { Board } from '../types';
-import type { BoardTemplate } from '../data/boardTemplates';
+import type { Board, BoardStyle } from '../types';
+import { boardTemplates } from '../data/boardTemplates';
 
 export const BoardsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -20,34 +21,59 @@ export const BoardsPage: React.FC = () => {
   const { boards, loading, error } = useSelector((state: RootState) => state.boards);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState<Board | null>(null);
+  const [settingsBoard, setSettingsBoard] = useState<Board | null>(null);
 
   useEffect(() => {
-    if (user) {
+    console.log('BoardsPage useEffect triggered, user:', user?.id);
+    console.log('Current boards count:', boards.length);
+    
+    // Only fetch boards if user exists and we don't already have boards loaded
+    // This prevents refetching and overwriting created boards
+    if (user && user.id && boards.length === 0 && !loading) {
+      console.log('Dispatching fetchBoards for user:', user.id);
       dispatch(fetchBoards(user.id));
     }
-  }, [dispatch, user]);
+  }, [dispatch, user?.id, boards.length, loading]); // Added boards.length and loading to dependencies
 
-  const handleCreateBoard = async (template: BoardTemplate | null, title: string, description: string) => {
+  const handleCreateBoard = async (boardData: {
+    title: string;
+    description: string;
+    templateId?: string;
+    style: BoardStyle;
+    isPublic: boolean;
+  }) => {
     if (!user) return;
     
     try {
+      // Find the template if templateId is provided
+      const template = boardData.templateId 
+        ? boardTemplates.find(t => t.id === boardData.templateId) 
+        : undefined;
+
+      console.log('Creating board with data:', { ...boardData, template });
+
       const result = await dispatch(createBoard({
-        title,
-        description,
+        title: boardData.title,
+        description: boardData.description,
         ownerId: user.id,
-        template,
+        template: template || undefined,
+        isPublic: boardData.isPublic,
+        style: boardData.style,
       })).unwrap();
+      
+      console.log('Board creation result:', result);
       
       setIsTemplateModalOpen(false);
       
+      // Note: Commenting out navigation to stay on boards page and see the new board
       // Navigate to the board, with template params if a template was used
-      if (result.board) {
-        if (template) {
-          navigate(`/boards/${result.board.id}?template=${template.id}&init=true`);
-        } else {
-          navigate(`/boards/${result.board.id}`);
-        }
-      }
+      // if (result.board) {
+      //   if (template) {
+      //     navigate(`/boards/${result.board.id}?template=${template.id}&init=true`);
+      //   } else {
+      //     navigate(`/boards/${result.board.id}`);
+      //   }
+      // }
     } catch (err) {
       console.error('Failed to create board:', err);
     }
@@ -68,6 +94,31 @@ export const BoardsPage: React.FC = () => {
     } catch (err) {
       console.error('Failed to delete board:', err);
     }
+  };
+
+  const handleUpdateBoard = async (updates: Partial<Board>) => {
+    if (!settingsBoard) return;
+    
+    try {
+      // Extract only the fields that updateBoard expects
+      const updateData: any = {
+        id: settingsBoard.id,
+        title: updates.title || settingsBoard.title,
+        description: updates.description || settingsBoard.description,
+      };
+      
+      if (updates.isPublic !== undefined) updateData.isPublic = updates.isPublic;
+      if (updates.backgroundColor) updateData.backgroundColor = updates.backgroundColor;
+      
+      await dispatch(updateBoard(updateData)).unwrap();
+      setSettingsBoard(null);
+    } catch (err) {
+      console.error('Failed to update board:', err);
+    }
+  };
+
+  const handleBoardSettings = (board: Board) => {
+    setSettingsBoard(board);
   };
 
   const handleBoardClick = (boardId: string) => {
@@ -131,6 +182,7 @@ export const BoardsPage: React.FC = () => {
                 onClick={() => handleBoardClick(board.id)}
                 onEdit={(board) => setEditingBoard(board)}
                 onDelete={handleDeleteBoard}
+                onSettings={handleBoardSettings}
               />
             ))}
             
@@ -147,11 +199,10 @@ export const BoardsPage: React.FC = () => {
           </div>
         )}
 
-        <BoardTemplateModal
+        <CreateBoardModal
           isOpen={isTemplateModalOpen}
           onClose={() => setIsTemplateModalOpen(false)}
-          onSelectTemplate={handleCreateBoard}
-          loading={loading}
+          onSubmit={handleCreateBoard}
         />
 
         <EditBoardModal
@@ -161,6 +212,20 @@ export const BoardsPage: React.FC = () => {
           board={editingBoard}
           loading={loading}
         />
+
+        {settingsBoard && user && (
+          <BoardSettingsModal
+            isOpen={!!settingsBoard}
+            onClose={() => setSettingsBoard(null)}
+            board={settingsBoard}
+            onUpdateBoard={handleUpdateBoard}
+            onDeleteBoard={() => {
+              handleDeleteBoard(settingsBoard.id);
+              setSettingsBoard(null);
+            }}
+            currentUserId={user.id}
+          />
+        )}
       </div>
     </div>
   );

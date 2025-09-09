@@ -73,11 +73,15 @@ export const BoardDetailPage: React.FC = () => {
   }, [dispatch, boardId]);
 
   useEffect(() => {
-    // Fetch cards for all lists
+    // Fetch cards for lists that don't already have cards loaded
     lists.forEach(list => {
-      dispatch(fetchCards(list.id));
+      const hasCardsForList = cards.some(card => card.listId === list.id);
+      if (!hasCardsForList) {
+        console.log('Fetching cards for list:', list.id, list.title);
+        dispatch(fetchCards(list.id));
+      }
     });
-  }, [dispatch, lists]);
+  }, [dispatch, lists, cards]);
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,66 +192,64 @@ export const BoardDetailPage: React.FC = () => {
     
     setActiveId(null);
     
-    if (!over) return;
+    if (!over) {
+      console.log('No drop target');
+      return;
+    }
     
     const activeId = active.id as string;
     const overId = over.id as string;
     
-    if (activeId === overId) return;
+    console.log('Drag ended:', { activeId, overId });
+    
+    if (activeId === overId) {
+      console.log('Dropped on same element');
+      return;
+    }
     
     const activeData = active.data.current;
     const overData = over.data.current;
     
-    console.log('Drag ended:', { activeId, overId, activeData, overData });
+    console.log('Active data:', activeData);
+    console.log('Over data:', overData);
     
     // Handle card operations
     if (activeData?.type === 'card') {
       const activeCard = activeData.card as Card;
+      console.log('Moving card:', activeCard.title, 'from list:', activeCard.listId);
       
       // If dropping on another card
       if (overData?.type === 'card') {
         const overCard = overData.card as Card;
+        console.log('Dropping on card:', overCard.title, 'in list:', overCard.listId);
         
-        // Same list reordering
-        if (activeCard.listId === overCard.listId) {
-          const listCards = cards
-            .filter(card => card.listId === activeCard.listId)
-            .sort((a, b) => a.position - b.position);
-            
-          const oldIndex = listCards.findIndex(card => card.id === activeId);
-          const newIndex = listCards.findIndex(card => card.id === overId);
-          
-          console.log('Reordering within list:', { oldIndex, newIndex, listCards });
-          
-          if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
-            dispatch(moveCard({
-              cardId: activeCard.id,
-              newListId: activeCard.listId,
-              newPosition: newIndex,
-            }));
-          }
-        } else {
-          // Moving to different list
-          const targetListCards = cards
-            .filter(card => card.listId === overCard.listId)
-            .sort((a, b) => a.position - b.position);
-            
-          const newIndex = targetListCards.findIndex(card => card.id === overId);
-          
+        // Calculate new position based on where we're dropping
+        const targetListCards = cards
+          .filter(card => card.listId === overCard.listId)
+          .sort((a, b) => a.position - b.position);
+        
+        const targetIndex = targetListCards.findIndex(card => card.id === overId);
+        console.log('Target index in list:', targetIndex, 'of', targetListCards.length, 'cards');
+        
+        if (targetIndex !== -1) {
           dispatch(moveCard({
             cardId: activeCard.id,
             newListId: overCard.listId,
-            newPosition: newIndex,
+            newPosition: targetIndex,
           }));
         }
       }
-      // If dropping on a list (empty area)
+      // If dropping on a list (empty area or list container)
       else if (overData?.type === 'list') {
         const targetList = overData.list as List;
+        console.log('Dropping on list:', targetList.title);
+        
         const targetListCards = cards
-          .filter(card => card.listId === targetList.id)
+          .filter(card => card.listId === targetList.id && card.id !== activeCard.id)
           .sort((a, b) => a.position - b.position);
-          
+        
+        console.log('Adding to end of list with', targetListCards.length, 'cards');
+        
         dispatch(moveCard({
           cardId: activeCard.id,
           newListId: targetList.id,
@@ -257,7 +259,8 @@ export const BoardDetailPage: React.FC = () => {
     }
     
     // Handle list reordering
-    if (activeData?.type === 'list' && overData?.type === 'list') {
+    else if (activeData?.type === 'list' && overData?.type === 'list') {
+      console.log('Reordering lists');
       const oldIndex = lists.findIndex(list => list.id === activeId);
       const newIndex = lists.findIndex(list => list.id === overId);
       
@@ -409,18 +412,31 @@ export const BoardDetailPage: React.FC = () => {
 
           {/* Drag Overlay */}
           <DragOverlay>
-            {activeId && activeId.startsWith('card-') ? (
-              <DraggableCard
-                card={cards.find(card => `card-${card.id}` === activeId)!}
-                onClick={() => {}}
-                isDragOverlay
-              />
-            ) : activeId && activeId.startsWith('list-') ? (
-              <div className="bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 rounded-lg p-3 w-72 shadow-xl">
-                <h3 className="font-medium text-gray-100">
-                  {lists.find(list => `list-${list.id}` === activeId)?.title}
-                </h3>
-              </div>
+            {activeId ? (
+              // Find the card or list being dragged
+              (() => {
+                const draggedCard = cards.find(card => card.id === activeId);
+                const draggedList = lists.find(list => list.id === activeId);
+                
+                if (draggedCard) {
+                  return (
+                    <DraggableCard
+                      card={draggedCard}
+                      onClick={() => {}}
+                      isDragOverlay
+                    />
+                  );
+                } else if (draggedList) {
+                  return (
+                    <div className="bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 rounded-lg p-3 w-72 shadow-xl">
+                      <h3 className="font-medium text-gray-100">
+                        {draggedList.title}
+                      </h3>
+                    </div>
+                  );
+                }
+                return null;
+              })()
             ) : null}
           </DragOverlay>
         </DndContext>

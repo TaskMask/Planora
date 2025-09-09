@@ -9,41 +9,13 @@ const initialState: BoardsState = {
   error: null,
 };
 
-// Mock boards for development without Firestore
-const mockBoards: Board[] = [
-  {
-    id: '1',
-    title: 'My First Board',
-    description: 'A sample board to get you started',
-    ownerId: 'demo-user',
-    members: ['demo-user'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    isPublic: false,
-    backgroundColor: '#3B82F6',
-  },
-  {
-    id: '2',
-    title: 'Team Project',
-    description: 'Collaborative workspace for the team',
-    ownerId: 'demo-user',
-    members: ['demo-user'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    isPublic: true,
-    backgroundColor: '#10B981',
-  },
-];
-
 export const fetchBoards = createAsyncThunk(
   'boards/fetchBoards',
   async (userId: string, { rejectWithValue }) => {
     try {
-      console.log('Fetching boards for user:', userId);
-      // Return mock boards for now
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
-      console.log('Returning mock boards');
-      return mockBoards;
+      // Return empty array for initial load - boards will be added via createBoard
+      // In a real app, this would fetch from an API
+      return [];
     } catch (error) {
       console.error('Error fetching boards:', error);
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch boards');
@@ -58,6 +30,11 @@ export const createBoard = createAsyncThunk(
     description: string; 
     ownerId: string;
     template?: any; // BoardTemplate from boardTemplates
+    isPublic?: boolean;
+    style?: {
+      backgroundColor: string;
+      cardStyle: string;
+    };
   }, { rejectWithValue }) => {
     try {
       console.log('Creating board:', boardData);
@@ -71,8 +48,19 @@ export const createBoard = createAsyncThunk(
         members: [boardData.ownerId],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        isPublic: false,
-        backgroundColor: boardData.template?.backgroundColor || '',
+        isPublic: boardData.isPublic || false,
+        backgroundColor: boardData.style?.backgroundColor || boardData.template?.backgroundColor || '#3B82F6',
+        permissions: [],
+        allowComments: true,
+        allowVoting: true,
+        isArchived: false,
+        tags: [],
+        style: {
+          backgroundColor: boardData.style?.backgroundColor || boardData.template?.backgroundColor || '#3B82F6',
+          cardStyle: (boardData.style?.cardStyle as any) || 'default',
+          fontSize: 'medium',
+          spacing: 'normal'
+        },
       };
       
       console.log('Board created:', newBoard);

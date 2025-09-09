@@ -6,6 +6,7 @@ export interface BoardTemplate {
   description: string;
   icon: React.ComponentType<any>;
   backgroundColor: string;
+  category: 'project' | 'kanban' | 'scrum' | 'personal' | 'business';
   lists: {
     title: string;
     cards?: {
@@ -15,6 +16,95 @@ export interface BoardTemplate {
   }[];
 }
 
+export const BOARD_THEMES = {
+  'gradient-blue': {
+    name: 'Ocean Blue',
+    gradient: 'from-blue-900 via-blue-800 to-cyan-900',
+    primary: 'blue',
+    cardStyle: 'glass'
+  },
+  'gradient-green': {
+    name: 'Forest Green', 
+    gradient: 'from-green-900 via-emerald-800 to-teal-900',
+    primary: 'emerald',
+    cardStyle: 'default'
+  },
+  'gradient-purple': {
+    name: 'Royal Purple',
+    gradient: 'from-purple-900 via-violet-800 to-indigo-900',
+    primary: 'purple',
+    cardStyle: 'colorful'
+  },
+  'gradient-orange': {
+    name: 'Sunset Orange',
+    gradient: 'from-orange-900 via-red-800 to-pink-900',
+    primary: 'orange',
+    cardStyle: 'default'
+  },
+  'gradient-teal': {
+    name: 'Tropical Teal',
+    gradient: 'from-teal-900 via-cyan-800 to-blue-900',
+    primary: 'teal',
+    cardStyle: 'minimal'
+  },
+  'gradient-pink': {
+    name: 'Rose Garden',
+    gradient: 'from-pink-900 via-rose-800 to-red-900',
+    primary: 'pink',
+    cardStyle: 'colorful'
+  },
+  'gradient-red': {
+    name: 'Fire Red',
+    gradient: 'from-red-900 via-orange-800 to-yellow-900',
+    primary: 'red',
+    cardStyle: 'default'
+  },
+  'gradient-indigo': {
+    name: 'Midnight Indigo',
+    gradient: 'from-indigo-900 via-purple-800 to-blue-900',
+    primary: 'indigo',
+    cardStyle: 'glass'
+  },
+  'gradient-gray': {
+    name: 'Storm Gray',
+    gradient: 'from-gray-900 via-slate-800 to-zinc-900',
+    primary: 'gray',
+    cardStyle: 'minimal'
+  },
+  'ocean': {
+    name: 'Ocean Classic',
+    gradient: 'from-blue-900 via-blue-800 to-cyan-900',
+    primary: 'blue',
+    cardStyle: 'default'
+  },
+  'forest': {
+    name: 'Forest Classic',
+    gradient: 'from-green-900 via-emerald-800 to-teal-900',
+    primary: 'green',
+    cardStyle: 'default'
+  },
+  'sunset': {
+    name: 'Sunset Classic',
+    gradient: 'from-orange-900 via-red-800 to-pink-900',
+    primary: 'orange',
+    cardStyle: 'default'
+  },
+  'purple': {
+    name: 'Purple Classic',
+    gradient: 'from-purple-900 via-violet-800 to-indigo-900',
+    primary: 'purple',
+    cardStyle: 'default'
+  },
+  'midnight': {
+    name: 'Midnight Classic',
+    gradient: 'from-slate-900 via-gray-900 to-black',
+    primary: 'gray',
+    cardStyle: 'default'
+  }
+} as const;
+
+export type ThemeKey = keyof typeof BOARD_THEMES;
+
 export const boardTemplates: BoardTemplate[] = [
   {
     id: 'kanban',
@@ -22,6 +112,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Track tasks with To Do, In Progress, and Done columns',
     icon: Target,
     backgroundColor: 'ocean',
+    category: 'kanban',
     lists: [
       {
         title: 'To Do',
@@ -66,6 +157,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Organize your agile sprints with backlog and sprint columns',
     icon: Code,
     backgroundColor: 'forest',
+    category: 'scrum',
     lists: [
       {
         title: 'Product Backlog',
@@ -122,6 +214,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Collaborate on team projects with assignments and deadlines',
     icon: Users,
     backgroundColor: 'purple',
+    category: 'project',
     lists: [
       {
         title: 'Ideas & Planning',
@@ -175,6 +268,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Plan and organize content creation and publishing',
     icon: Calendar,
     backgroundColor: 'sunset',
+    category: 'business',
     lists: [
       {
         title: 'Content Ideas',
@@ -232,6 +326,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Organize your personal goals and daily tasks',
     icon: Heart,
     backgroundColor: 'midnight',
+    category: 'personal',
     lists: [
       {
         title: 'Today',
@@ -297,6 +392,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Strategic planning for business goals and objectives',
     icon: Briefcase,
     backgroundColor: 'forest',
+    category: 'business',
     lists: [
       {
         title: 'Strategy',
@@ -345,6 +441,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Plan and track home improvement projects',
     icon: Home,
     backgroundColor: 'sunset',
+    category: 'personal',
     lists: [
       {
         title: 'Planning',
@@ -398,6 +495,7 @@ export const boardTemplates: BoardTemplate[] = [
     description: 'Track your learning journey and skill development',
     icon: BookOpen,
     backgroundColor: 'purple',
+    category: 'personal',
     lists: [
       {
         title: 'Want to Learn',

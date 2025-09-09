@@ -38,36 +38,11 @@ export const fetchLists = createAsyncThunk(
     try {
       console.log('Fetching lists for board:', boardId);
       
-      // Return mock lists for now
-      const mockLists: List[] = [
-        {
-          id: '1',
-          title: 'To Do',
-          boardId,
-          position: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: 'In Progress',
-          boardId,
-          position: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          title: 'Done',
-          boardId,
-          position: 2,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      // Return empty lists array for new boards
+      const mockLists: List[] = [];
       
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate loading
-      console.log('Returning mock lists');
+      console.log('Returning empty lists for new board');
       return mockLists;
     } catch (error) {
       console.error('Error fetching lists:', error);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Users, MoreHorizontal, Edit, Trash2, Lock, Globe } from 'lucide-react';
+import { Calendar, Users, MoreHorizontal, Edit, Trash2, Lock, Globe, Settings } from 'lucide-react';
 import { Card } from '../ui';
 import type { Board } from '../../types';
 
@@ -8,6 +8,7 @@ interface BoardCardProps {
   onClick: () => void;
   onEdit?: (board: Board) => void;
   onDelete?: (boardId: string) => void;
+  onSettings?: (board: Board) => void;
 }
 
 export const BoardCard: React.FC<BoardCardProps> = ({
@@ -15,6 +16,7 @@ export const BoardCard: React.FC<BoardCardProps> = ({
   onClick,
   onEdit,
   onDelete,
+  onSettings,
 }) => {
   const [showActions, setShowActions] = useState(false);
 
@@ -24,6 +26,12 @@ export const BoardCard: React.FC<BoardCardProps> = ({
       day: 'numeric',
       year: 'numeric',
     }).format(new Date(dateString));
+  };
+
+  const handleSettings = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowActions(false);
+    onSettings?.(board);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -59,7 +67,7 @@ export const BoardCard: React.FC<BoardCardProps> = ({
             )}
           </div>
           
-          {(onEdit || onDelete) && (
+          {(onEdit || onDelete || onSettings) && (
             <div className="relative">
               <button
                 onClick={(e) => {
@@ -81,6 +89,15 @@ export const BoardCard: React.FC<BoardCardProps> = ({
                     >
                       <Edit size={16} />
                       Edit Board
+                    </button>
+                  )}
+                  {onSettings && (
+                    <button
+                      onClick={handleSettings}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors duration-200 text-left"
+                    >
+                      <Settings size={16} />
+                      Settings
                     </button>
                   )}
                   {onDelete && (

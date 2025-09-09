@@ -7,15 +7,57 @@ export interface User {
   updatedAt: string;
 }
 
+export interface BoardPermission {
+  userId: string;
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+  addedAt: string;
+  addedBy: string;
+}
+
+export interface BoardTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'project' | 'kanban' | 'scrum' | 'personal' | 'business';
+  lists: {
+    title: string;
+    cards?: {
+      title: string;
+      description?: string;
+    }[];
+  }[];
+  backgroundColor: string;
+  isPublic: boolean;
+  createdBy: string;
+  usageCount: number;
+}
+
+export interface BoardStyle {
+  backgroundColor: string;
+  backgroundImage?: string;
+  backgroundGradient?: string;
+  cardStyle: 'default' | 'minimal' | 'colorful' | 'glass';
+  fontSize: 'small' | 'medium' | 'large';
+  spacing: 'compact' | 'normal' | 'relaxed';
+}
+
 export interface Board {
   id: string;
   title: string;
   description: string;
   ownerId: string;
   members: string[];
+  permissions: BoardPermission[];
+  templateId?: string;
+  style: BoardStyle;
+  isPublic: boolean;
+  allowComments: boolean;
+  allowVoting: boolean;
+  isArchived: boolean;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
-  isPublic: boolean;
+  // Legacy support
   backgroundColor?: string;
 }
 

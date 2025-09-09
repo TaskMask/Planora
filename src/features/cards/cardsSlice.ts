@@ -91,70 +91,11 @@ export const fetchCards = createAsyncThunk(
     try {
       console.log('Fetching cards for list:', listId);
       
-      // Return mock cards for now
-      const mockCards: Card[] = [
-        {
-          id: '1',
-          title: 'Design Landing Page',
-          description: 'Create a modern and responsive landing page design',
-          listId,
-          position: 0,
-          labels: [],
-          assignees: ['user1'],
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-          priority: 'high',
-          estimatedHours: 8,
-          checklist: [
-            { id: 'c1', text: 'Research competitor designs', completed: true, createdAt: new Date().toISOString() },
-            { id: 'c2', text: 'Create wireframes', completed: false, createdAt: new Date().toISOString() },
-            { id: 'c3', text: 'Design mockups', completed: false, createdAt: new Date().toISOString() }
-          ],
-          attachments: [],
-          createdBy: 'demo-user',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: 'Implement User Authentication',
-          description: 'Set up secure user authentication and authorization',
-          listId,
-          position: 1,
-          labels: [],
-          assignees: ['user2', 'user3'],
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-          priority: 'urgent',
-          estimatedHours: 12,
-          checklist: [
-            { id: 'c4', text: 'Set up Firebase Auth', completed: true, createdAt: new Date().toISOString() },
-            { id: 'c5', text: 'Create login forms', completed: true, createdAt: new Date().toISOString() },
-            { id: 'c6', text: 'Add password reset', completed: false, createdAt: new Date().toISOString() },
-            { id: 'c7', text: 'Implement email verification', completed: false, createdAt: new Date().toISOString() }
-          ],
-          attachments: [],
-          createdBy: 'demo-user',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          title: 'Write Documentation',
-          description: 'Document the API endpoints and user guide',
-          listId,
-          position: 2,
-          labels: [],
-          assignees: [],
-          priority: 'medium',
-          estimatedHours: 4,
-          attachments: [],
-          createdBy: 'demo-user',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      // Return empty cards array for new boards
+      const mockCards: Card[] = [];
       
       await new Promise(resolve => setTimeout(resolve, 200)); // Simulate loading
-      console.log('Returning mock cards');
+      console.log('Returning empty cards for list:', listId);
       return mockCards;
     } catch (error) {
       console.error('Error fetching cards:', error);
@@ -212,55 +153,62 @@ const cardsSlice = createSlice({
     },
     moveCard: (state, action: PayloadAction<{ cardId: string; newListId: string; newPosition: number }>) => {
       const { cardId, newListId, newPosition } = action.payload;
+      console.log('moveCard action called:', { cardId, newListId, newPosition });
+      
       const cardIndex = state.cards.findIndex(card => card.id === cardId);
       
-      if (cardIndex !== -1) {
-        const card = state.cards[cardIndex];
-        const oldListId = card.listId;
-        
-        // Remove card from its current position
-        state.cards.splice(cardIndex, 1);
-        
-        // Get all cards in the target list, sorted by position
-        const targetListCards = state.cards
-          .filter(c => c.listId === newListId)
-          .sort((a, b) => a.position - b.position);
-        
-        // Update the moved card
-        const updatedCard = {
-          ...card,
-          listId: newListId,
-          position: newPosition,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        // Reposition cards in target list
-        targetListCards.forEach((c, index) => {
-          const cardIdx = state.cards.findIndex(sc => sc.id === c.id);
-          if (cardIdx !== -1) {
-            if (index >= newPosition) {
-              state.cards[cardIdx] = {
-                ...state.cards[cardIdx],
-                position: index + 1,
-              };
-            } else {
-              state.cards[cardIdx] = {
-                ...state.cards[cardIdx],
-                position: index,
-              };
-            }
+      if (cardIndex === -1) {
+        console.error('Card not found with id:', cardId);
+        return;
+      }
+      
+      const card = state.cards[cardIndex];
+      const oldListId = card.listId;
+      
+      console.log('Moving card:', card.title, 'from list:', oldListId, 'to list:', newListId, 'at position:', newPosition);
+      
+      // Step 1: Update the card being moved
+      state.cards[cardIndex] = {
+        ...card,
+        listId: newListId,
+        position: newPosition,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      // Step 2: Update positions of other cards in the target list
+      state.cards.forEach((c, index) => {
+        if (c.id !== cardId && c.listId === newListId) {
+          if (c.position >= newPosition) {
+            state.cards[index] = {
+              ...c,
+              position: c.position + 1,
+            };
+          }
+        }
+      });
+      
+      // Step 3: If moving between lists, update positions in the old list
+      if (oldListId !== newListId) {
+        state.cards.forEach((c, index) => {
+          if (c.listId === oldListId && c.position > card.position) {
+            state.cards[index] = {
+              ...c,
+              position: c.position - 1,
+            };
           }
         });
-        
-        // If moving to a different list, reposition cards in the old list
-        if (oldListId !== newListId) {
-          const oldListCards = state.cards
-            .filter(c => c.listId === oldListId)
+      }
+      
+      // Step 4: Clean up and normalize positions
+      [oldListId, newListId].forEach(listId => {
+        if (listId) {
+          const listCards = state.cards
+            .filter(c => c.listId === listId)
             .sort((a, b) => a.position - b.position);
-            
-          oldListCards.forEach((c, index) => {
+          
+          listCards.forEach((c, index) => {
             const cardIdx = state.cards.findIndex(sc => sc.id === c.id);
-            if (cardIdx !== -1) {
+            if (cardIdx !== -1 && state.cards[cardIdx].position !== index) {
               state.cards[cardIdx] = {
                 ...state.cards[cardIdx],
                 position: index,
@@ -268,12 +216,9 @@ const cardsSlice = createSlice({
             }
           });
         }
-        
-        // Add the updated card back
-        state.cards.push(updatedCard);
-        
-        console.log('Card moved:', { cardId, newListId, newPosition, updatedCard });
-      }
+      });
+      
+      console.log('Card move completed');
     },
   },
   extraReducers: (builder) => {
@@ -285,7 +230,17 @@ const cardsSlice = createSlice({
       })
       .addCase(fetchCards.fulfilled, (state, action) => {
         state.loading = false;
-        state.cards = action.payload;
+        // Don't replace all cards, add/update only the cards for this specific list
+        const newCards = action.payload;
+        const listId = newCards.length > 0 ? newCards[0].listId : null;
+        
+        if (listId) {
+          // Remove existing cards for this list to avoid duplicates
+          state.cards = state.cards.filter(card => card.listId !== listId);
+          // Add the new cards for this list
+          state.cards.push(...newCards);
+          console.log('Cards updated for list:', listId, 'Total cards now:', state.cards.length);
+        }
       })
       .addCase(fetchCards.rejected, (state, action) => {
         state.loading = false;
