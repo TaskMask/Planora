@@ -2,8 +2,29 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Card, CardsState } from '../../types';
 
+// Helper functions for localStorage
+const CARDS_STORAGE_KEY = 'planora_cards';
+
+const saveCardsToStorage = (cards: Card[]) => {
+  try {
+    localStorage.setItem(CARDS_STORAGE_KEY, JSON.stringify(cards));
+  } catch (error) {
+    console.error('Failed to save cards to localStorage:', error);
+  }
+};
+
+const loadCardsFromStorage = (): Card[] => {
+  try {
+    const stored = localStorage.getItem(CARDS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load cards from localStorage:', error);
+    return [];
+  }
+};
+
 const initialState: CardsState = {
-  cards: [],
+  cards: loadCardsFromStorage(),
   loading: false,
   error: null,
 };
@@ -91,12 +112,13 @@ export const fetchCards = createAsyncThunk(
     try {
       console.log('Fetching cards for list:', listId);
       
-      // Return empty cards array for new boards
-      const mockCards: Card[] = [];
+      // Load cards from localStorage and filter by listId
+      const allCards = loadCardsFromStorage();
+      const listCards = allCards.filter(card => card.listId === listId);
       
       await new Promise(resolve => setTimeout(resolve, 200)); // Simulate loading
-      console.log('Returning empty cards for list:', listId);
-      return mockCards;
+      console.log('Returning cards for list:', listId, listCards);
+      return listCards;
     } catch (error) {
       console.error('Error fetching cards:', error);
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch cards');
@@ -148,8 +170,13 @@ const cardsSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setCards: (state, action: PayloadAction<Card[]>) => {
+      state.cards = action.payload;
+      saveCardsToStorage(state.cards);
+    },
     reorderCards: (state, action: PayloadAction<{ cards: Card[] }>) => {
       state.cards = action.payload.cards;
+      saveCardsToStorage(state.cards);
     },
     moveCard: (state, action: PayloadAction<{ cardId: string; newListId: string; newPosition: number }>) => {
       const { cardId, newListId, newPosition } = action.payload;
@@ -219,6 +246,7 @@ const cardsSlice = createSlice({
       });
       
       console.log('Card move completed');
+      saveCardsToStorage(state.cards);
     },
   },
   extraReducers: (builder) => {
@@ -249,6 +277,7 @@ const cardsSlice = createSlice({
       // Create card
       .addCase(createCard.fulfilled, (state, action) => {
         state.cards.push(action.payload);
+        saveCardsToStorage(state.cards);
       })
       // Update card
       .addCase(updateCard.fulfilled, (state, action) => {
@@ -256,17 +285,20 @@ const cardsSlice = createSlice({
         if (index !== -1) {
           state.cards[index] = { ...state.cards[index], ...action.payload };
         }
+        saveCardsToStorage(state.cards);
       })
       // Delete card
       .addCase(deleteCard.fulfilled, (state, action) => {
         state.cards = state.cards.filter(card => card.id !== action.payload);
+        saveCardsToStorage(state.cards);
       })
       // Create cards from template
       .addCase(createCardsFromTemplate.fulfilled, (state, action) => {
         state.cards.push(...action.payload);
+        saveCardsToStorage(state.cards);
       });
   },
 });
 
-export const { clearError, moveCard, reorderCards } = cardsSlice.actions;
+export const { clearError, setCards, moveCard, reorderCards } = cardsSlice.actions;
 export default cardsSlice.reducer;

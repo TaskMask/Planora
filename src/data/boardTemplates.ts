@@ -1,5 +1,42 @@
 import { BookOpen, Target, Users, Calendar, Code, Heart, Briefcase, Home } from 'lucide-react';
 
+// Function to convert Tailwind gradient classes to CSS gradients
+export const tailwindToCSSGradient = (tailwindGradient: string): string => {
+  const gradientMap: { [key: string]: string } = {
+    // New light gradients
+    'from-blue-100 via-blue-200 to-cyan-100': 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #cffafe 100%)',
+    'from-green-100 via-emerald-200 to-teal-100': 'linear-gradient(135deg, #dcfce7 0%, #a7f3d0 50%, #ccfbf1 100%)',
+    'from-purple-100 via-violet-200 to-indigo-100': 'linear-gradient(135deg, #f3e8ff 0%, #ddd6fe 50%, #e0e7ff 100%)',
+    'from-orange-100 via-amber-200 to-yellow-100': 'linear-gradient(135deg, #fed7aa 0%, #fde68a 50%, #fef3c7 100%)',
+    'from-teal-100 via-cyan-200 to-blue-100': 'linear-gradient(135deg, #ccfbf1 0%, #a5f3fc 50%, #dbeafe 100%)',
+    'from-pink-100 via-rose-200 to-red-100': 'linear-gradient(135deg, #fce7f3 0%, #fecdd3 50%, #fee2e2 100%)',
+    'from-red-100 via-orange-200 to-yellow-100': 'linear-gradient(135deg, #fee2e2 0%, #fed7aa 50%, #fef3c7 100%)',
+    'from-indigo-100 via-blue-200 to-purple-100': 'linear-gradient(135deg, #e0e7ff 0%, #bfdbfe 50%, #f3e8ff 100%)',
+    'from-gray-100 via-slate-200 to-zinc-100': 'linear-gradient(135deg, #f3f4f6 0%, #e2e8f0 50%, #f4f4f5 100%)',
+    
+    // Medium intensity gradients
+    'from-blue-300 via-blue-400 to-cyan-300': 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 50%, #67e8f9 100%)',
+    'from-green-300 via-emerald-400 to-teal-300': 'linear-gradient(135deg, #86efac 0%, #34d399 50%, #5eead4 100%)',
+    'from-orange-300 via-amber-400 to-yellow-300': 'linear-gradient(135deg, #fdba74 0%, #fbbf24 50%, #fde047 100%)',
+    'from-purple-300 via-violet-400 to-indigo-300': 'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 50%, #a5b4fc 100%)',
+    'from-slate-300 via-gray-400 to-zinc-300': 'linear-gradient(135deg, #cbd5e1 0%, #9ca3af 50%, #d4d4d8 100%)',
+    
+    // Legacy dark gradients (for backwards compatibility)
+    'from-blue-900 via-blue-800 to-cyan-900': 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #164e63 100%)',
+    'from-green-900 via-emerald-800 to-teal-900': 'linear-gradient(135deg, #14532d 0%, #065f46 50%, #134e4a 100%)',
+    'from-purple-900 via-violet-800 to-indigo-900': 'linear-gradient(135deg, #581c87 0%, #5b21b6 50%, #312e81 100%)',
+    'from-orange-900 via-red-800 to-pink-900': 'linear-gradient(135deg, #9a3412 0%, #991b1b 50%, #831843 100%)',
+    'from-teal-900 via-cyan-800 to-blue-900': 'linear-gradient(135deg, #134e4a 0%, #155e75 50%, #1e3a8a 100%)',
+    'from-pink-900 via-rose-800 to-red-900': 'linear-gradient(135deg, #831843 0%, #9f1239 50%, #7f1d1d 100%)',
+    'from-indigo-900 via-purple-800 to-violet-900': 'linear-gradient(135deg, #312e81 0%, #6b21a8 50%, #581c87 100%)',
+    'from-yellow-900 via-orange-800 to-red-900': 'linear-gradient(135deg, #713f12 0%, #9a3412 50%, #7f1d1d 100%)',
+    'from-gray-900 via-slate-800 to-gray-900': 'linear-gradient(135deg, #111827 0%, #1e293b 50%, #111827 100%)',
+    'from-emerald-900 via-green-800 to-lime-900': 'linear-gradient(135deg, #064e3b 0%, #166534 50%, #365314 100%)',
+  };
+  
+  return gradientMap[tailwindGradient] || 'linear-gradient(135deg, #f3f4f6 0%, #e2e8f0 100%)';
+};
+
 export interface BoardTemplate {
   id: string;
   name: string;
@@ -18,86 +55,86 @@ export interface BoardTemplate {
 
 export const BOARD_THEMES = {
   'gradient-blue': {
-    name: 'Ocean Blue',
-    gradient: 'from-blue-900 via-blue-800 to-cyan-900',
+    name: 'Ocean Breeze',
+    gradient: 'from-blue-100 via-blue-200 to-cyan-100',
     primary: 'blue',
     cardStyle: 'glass'
   },
   'gradient-green': {
-    name: 'Forest Green', 
-    gradient: 'from-green-900 via-emerald-800 to-teal-900',
+    name: 'Fresh Mint', 
+    gradient: 'from-green-100 via-emerald-200 to-teal-100',
     primary: 'emerald',
     cardStyle: 'default'
   },
   'gradient-purple': {
-    name: 'Royal Purple',
-    gradient: 'from-purple-900 via-violet-800 to-indigo-900',
+    name: 'Lavender Dreams',
+    gradient: 'from-purple-100 via-violet-200 to-indigo-100',
     primary: 'purple',
     cardStyle: 'colorful'
   },
   'gradient-orange': {
-    name: 'Sunset Orange',
-    gradient: 'from-orange-900 via-red-800 to-pink-900',
+    name: 'Warm Sunset',
+    gradient: 'from-orange-100 via-amber-200 to-yellow-100',
     primary: 'orange',
     cardStyle: 'default'
   },
   'gradient-teal': {
-    name: 'Tropical Teal',
-    gradient: 'from-teal-900 via-cyan-800 to-blue-900',
+    name: 'Tropical Waters',
+    gradient: 'from-teal-100 via-cyan-200 to-blue-100',
     primary: 'teal',
     cardStyle: 'minimal'
   },
   'gradient-pink': {
-    name: 'Rose Garden',
-    gradient: 'from-pink-900 via-rose-800 to-red-900',
+    name: 'Rose Petals',
+    gradient: 'from-pink-100 via-rose-200 to-red-100',
     primary: 'pink',
     cardStyle: 'colorful'
   },
   'gradient-red': {
-    name: 'Fire Red',
-    gradient: 'from-red-900 via-orange-800 to-yellow-900',
+    name: 'Coral Sunset',
+    gradient: 'from-red-100 via-orange-200 to-yellow-100',
     primary: 'red',
     cardStyle: 'default'
   },
   'gradient-indigo': {
-    name: 'Midnight Indigo',
-    gradient: 'from-indigo-900 via-purple-800 to-blue-900',
+    name: 'Soft Sky',
+    gradient: 'from-indigo-100 via-blue-200 to-purple-100',
     primary: 'indigo',
     cardStyle: 'glass'
   },
   'gradient-gray': {
-    name: 'Storm Gray',
-    gradient: 'from-gray-900 via-slate-800 to-zinc-900',
+    name: 'Morning Mist',
+    gradient: 'from-gray-100 via-slate-200 to-zinc-100',
     primary: 'gray',
     cardStyle: 'minimal'
   },
   'ocean': {
-    name: 'Ocean Classic',
-    gradient: 'from-blue-900 via-blue-800 to-cyan-900',
+    name: 'Deep Ocean',
+    gradient: 'from-blue-300 via-blue-400 to-cyan-300',
     primary: 'blue',
     cardStyle: 'default'
   },
   'forest': {
-    name: 'Forest Classic',
-    gradient: 'from-green-900 via-emerald-800 to-teal-900',
+    name: 'Forest Grove',
+    gradient: 'from-green-300 via-emerald-400 to-teal-300',
     primary: 'green',
     cardStyle: 'default'
   },
   'sunset': {
-    name: 'Sunset Classic',
-    gradient: 'from-orange-900 via-red-800 to-pink-900',
+    name: 'Golden Hour',
+    gradient: 'from-orange-300 via-amber-400 to-yellow-300',
     primary: 'orange',
     cardStyle: 'default'
   },
   'purple': {
-    name: 'Purple Classic',
-    gradient: 'from-purple-900 via-violet-800 to-indigo-900',
+    name: 'Soft Purple',
+    gradient: 'from-purple-300 via-violet-400 to-indigo-300',
     primary: 'purple',
     cardStyle: 'default'
   },
   'midnight': {
-    name: 'Midnight Classic',
-    gradient: 'from-slate-900 via-gray-900 to-black',
+    name: 'Charcoal',
+    gradient: 'from-slate-300 via-gray-400 to-zinc-300',
     primary: 'gray',
     cardStyle: 'default'
   }

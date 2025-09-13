@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { User, AuthState } from '../../types';
 import { authService } from '../../services/auth';
+import { demoAuthService } from '../../services/demoAuth';
 
 const initialState: AuthState = {
   user: null,
@@ -30,10 +31,18 @@ export const loginWithGoogle = createAsyncThunk(
   }
 );
 
+export const loginDemo = createAsyncThunk(
+  'auth/loginDemo',
+  async () => {
+    return await demoAuthService.signInDemo();
+  }
+);
+
 export const logout = createAsyncThunk(
   'auth/logout',
   async () => {
     await authService.signOut();
+    await demoAuthService.signOut();
   }
 );
 
@@ -85,6 +94,18 @@ const authSlice = createSlice({
       .addCase(loginWithGoogle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Google login failed';
+      })
+      .addCase(loginDemo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginDemo.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(loginDemo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Demo login failed';
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;

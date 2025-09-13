@@ -58,9 +58,9 @@ Planora is a Trello clone built as a portfolio project featuring modern web tech
   - [ ] List reordering
   - [ ] Optimistic updates
 
-#### Week 5: Real-time Sync & Attachments
-- [ ] Firestore real-time listeners
-- [ ] Real-time collaboration features
+#### Week 5: File Attachments & Advanced Features
+- [ ] File upload system
+- [ ] Card attachments
 - [ ] File attachment system
   - [ ] Firebase Storage integration
   - [ ] File upload UI
@@ -73,7 +73,7 @@ Planora is a Trello clone built as a portfolio project featuring modern web tech
 - [ ] Accessibility improvements
 - [ ] Mobile responsiveness
 - [ ] Team roles and permissions
-- [ ] Notifications system
+- [ ] Advanced search functionality
 - [ ] Calendar view (optional)
 
 #### Week 7: Testing, CI, and Deployment

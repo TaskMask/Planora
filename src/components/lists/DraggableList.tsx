@@ -9,6 +9,7 @@ interface DraggableListProps {
   cards: Card[];
   onAddCard: (listId: string, listTitle: string) => void;
   onCardClick: (card: Card) => void;
+  themeColor?: string;
 }
 
 export const DraggableList: React.FC<DraggableListProps> = ({
@@ -16,6 +17,7 @@ export const DraggableList: React.FC<DraggableListProps> = ({
   cards,
   onAddCard,
   onCardClick,
+  themeColor,
 }) => {
   const {
     attributes,
@@ -58,6 +60,7 @@ export const DraggableList: React.FC<DraggableListProps> = ({
         cards={cards}
         onAddCard={onAddCard}
         onCardClick={onCardClick}
+        themeColor={themeColor}
       />
     </div>
   );

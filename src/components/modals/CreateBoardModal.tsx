@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { X, Users, Settings } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { boardTemplates, BOARD_THEMES, type ThemeKey } from '../../data/boardTemplates';
+import { X, Settings, Users } from 'lucide-react';
+import { Button } from '../ui';
+import { boardTemplates, BOARD_THEMES, tailwindToCSSGradient } from '../../data/boardTemplates';
+
+type ThemeKey = keyof typeof BOARD_THEMES;
 import type { BoardStyle } from '../../types';
 
 interface CreateBoardModalProps {
@@ -62,12 +64,16 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({ isOpen, onCl
       ? boardTemplates.find(t => t.id === selectedTemplate) 
       : null;
     
+    // Convert Tailwind gradient to CSS gradient
+    const selectedThemeGradient = BOARD_THEMES[selectedTheme]?.gradient || 'from-gray-600 to-gray-700';
+    const cssGradient = tailwindToCSSGradient(selectedThemeGradient);
+    
     onSubmit({
       title: boardTitle || template?.name || 'New Board',
       description: boardDescription || template?.description || '',
       templateId: (selectedTemplate && selectedTemplate !== 'blank') ? selectedTemplate : undefined,
       style: {
-        backgroundColor: selectedTheme,
+        backgroundColor: cssGradient, // Use the CSS gradient instead of theme key
         cardStyle,
         fontSize: 'medium',
         spacing: 'normal'

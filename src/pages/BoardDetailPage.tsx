@@ -17,13 +17,13 @@ import type {
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import type { RootState, AppDispatch } from '../store';
-import { fetchLists, createList, moveList } from '../features/lists';
+import { fetchLists, createList, moveListAsync } from '../features/lists';
 import { fetchCards, createCard, updateCard, deleteCard, moveCard } from '../features/cards';
 import { fetchLabels } from '../features/labels';
 import { useAuth } from '../hooks/useAuth';
 import { useTemplateInitialization } from '../hooks/useTemplateInitialization';
 import { Button } from '../components/ui';
-import { Header } from '../components/layout';
+import { Layout } from '../components/layout';
 import { CreateCardModal } from '../components/cards';
 import { CardDetailModal } from '../components/cards/CardDetailModal';
 import { DraggableList } from '../components/lists';
@@ -39,6 +39,10 @@ export const BoardDetailPage: React.FC = () => {
   const { lists, loading, error } = useSelector((state: RootState) => state.lists);
   const { cards } = useSelector((state: RootState) => state.cards);
   const { labels } = useSelector((state: RootState) => state.labels);
+  
+  // Determine if user is in demo mode for navigation
+  const isDemoMode = user?.id === 'demo-user-123';
+  const boardsUrl = isDemoMode ? '/demo' : '/boards';
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [newListTitle, setNewListTitle] = useState('');
   const [cardModalState, setCardModalState] = useState<{
@@ -62,15 +66,36 @@ export const BoardDetailPage: React.FC = () => {
 
   const currentBoard = boards.find(board => board.id === boardId);
 
+  // Create mock user objects from board members for assignees functionality
+  const getBoardMembers = () => {
+    if (!currentBoard || !user) return [];
+    
+    const memberNames: { [key: string]: string } = {
+      'alice': 'Alice Johnson',
+      'bob': 'Bob Smith',
+      'charlie': 'Charlie Brown',
+      'diana': 'Diana Prince',
+    };
+    
+    return currentBoard.members.map(memberId => ({
+      id: memberId,
+      email: memberId === user.id ? user.email : `${memberId}@example.com`,
+      displayName: memberId === user.id ? user.displayName : memberNames[memberId] || `User ${memberId}`,
+      photoURL: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+  };
+
   // Initialize template if needed
   useTemplateInitialization(boardId, user?.id);
 
   useEffect(() => {
-    if (boardId) {
-      dispatch(fetchLists(boardId));
+    if (boardId && user?.id) {
+      dispatch(fetchLists({ boardId, userId: user.id }));
       dispatch(fetchLabels(boardId));
     }
-  }, [dispatch, boardId]);
+  }, [dispatch, boardId, user?.id]);
 
   useEffect(() => {
     // Fetch cards for lists that don't already have cards loaded
@@ -265,7 +290,7 @@ export const BoardDetailPage: React.FC = () => {
       const newIndex = lists.findIndex(list => list.id === overId);
       
       if (oldIndex !== newIndex) {
-        dispatch(moveList({
+        dispatch(moveListAsync({
           listId: activeId,
           newPosition: newIndex,
         }));
@@ -273,34 +298,24 @@ export const BoardDetailPage: React.FC = () => {
     }
   };
 
+  const getListThemeStyle = (board?: any) => {
+    if (!board) return '';
+    
+    const backgroundColor = board.style?.backgroundColor || board.backgroundColor;
+    return backgroundColor || '';
+  };
+
   const getCardsForList = (listId: string) => {
     return cards.filter(card => card.listId === listId);
   };
 
-  const getBackgroundClass = (bgColor?: string) => {
-    switch (bgColor) {
-      case 'ocean':
-        return 'from-blue-900 via-blue-800 to-cyan-900';
-      case 'forest':
-        return 'from-green-900 via-emerald-800 to-teal-900';
-      case 'sunset':
-        return 'from-orange-900 via-red-800 to-pink-900';
-      case 'purple':
-        return 'from-purple-900 via-violet-800 to-indigo-900';
-      case 'midnight':
-        return 'from-slate-900 via-gray-900 to-black';
-      default:
-        return 'from-gray-900 via-gray-800 to-gray-900';
-    }
-  };
-
   if (!currentBoard) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${getBackgroundClass()} flex items-center justify-center`}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-100 mb-2">Board not found</h2>
           <p className="text-gray-300 mb-4">The board you're looking for doesn't exist or you don't have access to it.</p>
-          <Button onClick={() => navigate('/boards')}>
+          <Button onClick={() => navigate(boardsUrl)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Boards
           </Button>
@@ -310,25 +325,23 @@ export const BoardDetailPage: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getBackgroundClass(currentBoard.backgroundColor)}`}>
-      <Header />
-      
+    <Layout>
       {/* Board Header */}
-      <div className="bg-gray-800/60 backdrop-blur-sm border-b border-gray-700/50">
+      <div className="bg-black/30 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate('/boards')}
+                onClick={() => navigate(boardsUrl)}
                 className="p-2"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-100">{currentBoard.title}</h1>
+                <h1 className="text-2xl font-bold text-white drop-shadow-lg">{currentBoard.title}</h1>
                 {currentBoard.description && (
-                  <p className="text-gray-300">{currentBoard.description}</p>
+                  <p className="text-white/90 drop-shadow-md">{currentBoard.description}</p>
                 )}
               </div>
             </div>
@@ -355,7 +368,7 @@ export const BoardDetailPage: React.FC = () => {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="inline-flex space-x-4 p-6 min-h-full">
+          <div className="inline-flex space-x-6 p-8 min-h-full">
             <SortableContext items={lists.map(list => list.id)} strategy={horizontalListSortingStrategy}>
               {lists.map((list) => {
                 const listCards = getCardsForList(list.id);
@@ -367,6 +380,7 @@ export const BoardDetailPage: React.FC = () => {
                     cards={listCards}
                     onAddCard={handleAddCard}
                     onCardClick={handleCardClick}
+                    themeColor={getListThemeStyle(currentBoard)}
                   />
                 );
               })}
@@ -374,17 +388,23 @@ export const BoardDetailPage: React.FC = () => {
 
             {/* Create New List */}
             {isCreatingList ? (
-              <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-lg p-3 w-72 flex-shrink-0">
+              <div 
+                className="backdrop-blur-md border border-white/30 rounded-xl p-4 w-72 flex-shrink-0"
+                style={getListThemeStyle(currentBoard) ? {
+                  backgroundImage: getListThemeStyle(currentBoard),
+                  opacity: 0.9
+                } : {}}
+              >
                 <form onSubmit={handleCreateList}>
                   <input
                     type="text"
                     value={newListTitle}
                     onChange={(e) => setNewListTitle(e.target.value)}
                     placeholder="Enter list title..."
-                    className="w-full p-2 bg-gray-700/50 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 backdrop-blur-sm"
                     autoFocus
                   />
-                  <div className="flex space-x-2 mt-2">
+                  <div className="flex space-x-2 mt-3">
                     <Button type="submit" size="sm" disabled={!newListTitle.trim()}>
                       Add List
                     </Button>
@@ -475,9 +495,9 @@ export const BoardDetailPage: React.FC = () => {
         onSave={handleUpdateCard}
         onDelete={handleDeleteCard}
         boardLabels={labels}
-        boardMembers={[]} // For now, we'll add board members later
+        boardMembers={getBoardMembers()}
         loading={loading}
       />
-    </div>
+    </Layout>
   );
 };

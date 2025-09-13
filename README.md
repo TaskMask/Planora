@@ -1,10 +1,15 @@
-# Planora - Trello Clone
+# Planora - Trello - ✅ Board management (create, edit, delete)
+- ✅ List management with drag-and-drop
+- ✅ Card management with detailed modals
+- ✅ Custom labels and priorities
+- ✅ Board templates
+- ✅ Responsive designlone
 
 A portfolio-ready Kanban board application built with modern web technologies and Firebase backend.
 
 ## 🎯 Project Overview
 
-A multi-user Kanban board app with real-time collaboration, featuring boards, lists/columns, and cards (tasks). Built with open-source tooling and Firebase for authentication, database, and storage.
+A multi-user Kanban board app with boards, lists/columns, and cards (tasks). Built with open-source tooling and Firebase for authentication, database, and storage.
 
 ## ✨ Features
 
@@ -24,8 +29,11 @@ A multi-user Kanban board app with real-time collaboration, featuring boards, li
 
 ### Advanced Features
 - 👥 Team roles and permissions (owner, admin, member, viewer)
-- 📅 Calendar view with Google Calendar sync
-- 🔔 Notifications and mentions
+- � Mobile responsive design
+- 🎨 Custom board backgrounds and themes
+- �📅 Calendar view integration
+- 🔍 Advanced search and filtering
+- � Analytics and reporting
 - ↩️ Undo/history functionality
 - 🤖 AI assistant for task suggestions
 
@@ -44,7 +52,7 @@ A multi-user Kanban board app with real-time collaboration, featuring boards, li
 - **Week 0**: Planning & design
 - **Week 1-2**: Core frontend scaffolding & auth
 - **Week 3-4**: Lists & cards CRUD + drag-and-drop
-- **Week 5**: Real-time sync & attachments
+- **Week 5**: File attachments & advanced features
 - **Week 6**: Polishing & accessibility
 - **Week 7**: Testing, CI, and deployment
 - **Week 8**: Portfolio preparation

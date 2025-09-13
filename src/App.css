@@ -5,6 +5,90 @@
   text-align: center;
 }
 
+/* Dark theme global styles with performance optimizations */
+body {
+  background-color: #000000;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Performance optimizations for animations */
+* {
+  /* Enable hardware acceleration for better performance */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Optimize cursor light rendering */
+.cursor-light-layer {
+  will-change: background;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Cursor interaction enhancements */
+button, a, input[type="submit"] {
+  transition: all 0.3s ease;
+  will-change: transform, filter;
+}
+
+button:hover, a:hover, input[type="submit"]:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(75, 85, 99, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(75, 85, 99, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Violet glass morphism variants - now darker */
+.glass-violet {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: rgb(156, 163, 175);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.glass-violet-bright {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(156, 163, 175, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  color: white;
+}
+
+/* Dark gradient buttons */
+.btn-gradient {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  border: 1px solid rgba(156, 163, 175, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -35,8 +119,29 @@
 
 .card {
   padding: 2em;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
 }
 
 .read-the-docs {
-  color: #888;
+  color: #666;
+}
+
+/* Dark scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #374151, #1f2937);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4b5563, #374151);
 }

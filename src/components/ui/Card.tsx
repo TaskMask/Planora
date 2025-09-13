@@ -24,7 +24,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={clsx(
-        'rounded-xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm shadow-xl shadow-black/20',
+        'rounded-2xl border border-gray-700/50 bg-gray-800/50 backdrop-blur-sm shadow-xl shadow-black/20',
         paddingClasses[padding],
         onClick && 'cursor-pointer hover:bg-gray-800/70 transition-all duration-200',
         className

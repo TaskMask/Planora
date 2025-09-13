@@ -2,6 +2,47 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Board, BoardsState } from '../../types';
 
+// Helper functions for localStorage
+const BOARDS_STORAGE_KEY = 'planora_boards';
+
+const saveBoardsToStorage = (boards: Board[]) => {
+  try {
+    localStorage.setItem(BOARDS_STORAGE_KEY, JSON.stringify(boards));
+  } catch (error) {
+    console.error('Failed to save boards to localStorage:', error);
+  }
+};
+
+const loadBoardsFromStorage = (): Board[] => {
+  try {
+    const stored = localStorage.getItem(BOARDS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load boards from localStorage:', error);
+    return [];
+  }
+};
+
+const getUserSpecificStorageKey = (userId: string) => `planora_boards_${userId}`;
+
+const saveBoardsToUserStorage = (boards: Board[], userId: string) => {
+  try {
+    localStorage.setItem(getUserSpecificStorageKey(userId), JSON.stringify(boards));
+  } catch (error) {
+    console.error('Failed to save boards to localStorage:', error);
+  }
+};
+
+const loadBoardsFromUserStorage = (userId: string): Board[] => {
+  try {
+    const stored = localStorage.getItem(getUserSpecificStorageKey(userId));
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load boards from localStorage:', error);
+    return [];
+  }
+};
+
 const initialState: BoardsState = {
   boards: [],
   currentBoard: null,
@@ -13,9 +54,25 @@ export const fetchBoards = createAsyncThunk(
   'boards/fetchBoards',
   async (userId: string, { rejectWithValue }) => {
     try {
-      // Return empty array for initial load - boards will be added via createBoard
-      // In a real app, this would fetch from an API
-      return [];
+      // First try to load from user-specific storage
+      let userBoards = loadBoardsFromUserStorage(userId);
+      
+      // If no user-specific boards and this is NOT a demo user, try to migrate from global storage
+      if (userBoards.length === 0 && userId !== 'demo-user-123') {
+        const storedBoards = loadBoardsFromStorage();
+        // Only migrate boards that belong to this specific user (not demo data)
+        userBoards = storedBoards.filter(board => 
+          board.ownerId === userId && board.ownerId !== 'demo-user-123'
+        );
+        
+        // Save to user-specific storage if we found any boards
+        if (userBoards.length > 0) {
+          saveBoardsToUserStorage(userBoards, userId);
+        }
+      }
+      
+      console.log('Loaded boards for user', userId, ':', userBoards);
+      return userBoards;
     } catch (error) {
       console.error('Error fetching boards:', error);
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch boards');
@@ -63,7 +120,17 @@ export const createBoard = createAsyncThunk(
         },
       };
       
-      console.log('Board created:', newBoard);
+      // Save to both global and user-specific localStorage
+      const existingBoards = loadBoardsFromStorage();
+      const updatedBoards = [newBoard, ...existingBoards];
+      saveBoardsToStorage(updatedBoards);
+      
+      // Also save to user-specific storage
+      const userBoards = loadBoardsFromUserStorage(boardData.ownerId);
+      const updatedUserBoards = [newBoard, ...userBoards];
+      saveBoardsToUserStorage(updatedUserBoards, boardData.ownerId);
+      
+      console.log('Board created and saved to localStorage:', newBoard);
       return { board: newBoard, template: boardData.template };
     } catch (error) {
       console.error('Error creating board:', error);
@@ -74,17 +141,41 @@ export const createBoard = createAsyncThunk(
 
 export const updateBoard = createAsyncThunk(
   'boards/updateBoard',
-  async (boardData: { id: string; title: string; description: string; isPublic?: boolean; backgroundColor?: string }, { rejectWithValue }) => {
+  async (boardData: { id: string; title: string; description: string; isPublic?: boolean; backgroundColor?: string; style?: any; allowComments?: boolean; allowVoting?: boolean }, { rejectWithValue }) => {
     try {
       console.log('Updating board:', boardData);
       
-      // Simulate update with mock data
+      // Load existing boards from localStorage
+      const existingBoards = loadBoardsFromStorage();
+      const boardIndex = existingBoards.findIndex(board => board.id === boardData.id);
+      
+      if (boardIndex === -1) {
+        throw new Error('Board not found');
+      }
+      
+      const originalBoard = existingBoards[boardIndex];
+      const userId = originalBoard.ownerId;
+      
+      // Update the board with new data
       const updatedBoard = {
+        ...originalBoard,
         ...boardData,
         updatedAt: new Date().toISOString(),
       };
       
-      console.log('Board updated:', updatedBoard);
+      // Update in global storage
+      existingBoards[boardIndex] = updatedBoard;
+      saveBoardsToStorage(existingBoards);
+      
+      // Update in user-specific storage
+      const userBoards = loadBoardsFromUserStorage(userId);
+      const userBoardIndex = userBoards.findIndex(board => board.id === boardData.id);
+      if (userBoardIndex !== -1) {
+        userBoards[userBoardIndex] = updatedBoard;
+        saveBoardsToUserStorage(userBoards, userId);
+      }
+      
+      console.log('Board updated and saved to localStorage:', updatedBoard);
       return updatedBoard;
     } catch (error) {
       console.error('Error updating board:', error);
@@ -99,10 +190,26 @@ export const deleteBoard = createAsyncThunk(
     try {
       console.log('Deleting board:', boardId);
       
-      // Simulate deletion
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Load existing boards to find the userId before deleting
+      const existingBoards = loadBoardsFromStorage();
+      const boardToDelete = existingBoards.find(board => board.id === boardId);
       
-      console.log('Board deleted:', boardId);
+      if (!boardToDelete) {
+        throw new Error('Board not found');
+      }
+      
+      const userId = boardToDelete.ownerId;
+      
+      // Update global storage
+      const updatedBoards = existingBoards.filter(board => board.id !== boardId);
+      saveBoardsToStorage(updatedBoards);
+      
+      // Update user-specific storage
+      const userBoards = loadBoardsFromUserStorage(userId);
+      const updatedUserBoards = userBoards.filter(board => board.id !== boardId);
+      saveBoardsToUserStorage(updatedUserBoards, userId);
+      
+      console.log('Board deleted from localStorage:', boardId);
       return boardId;
     } catch (error) {
       console.error('Error deleting board:', error);
@@ -118,6 +225,9 @@ const boardsSlice = createSlice({
     clearBoards: (state) => {
       state.boards = [];
       state.currentBoard = null;
+    },
+    setBoards: (state, action: PayloadAction<Board[]>) => {
+      state.boards = action.payload;
     },
     setCurrentBoard: (state, action: PayloadAction<Board | null>) => {
       state.currentBoard = action.payload;
@@ -183,5 +293,5 @@ const boardsSlice = createSlice({
   },
 });
 
-export const { clearBoards, setCurrentBoard } = boardsSlice.actions;
+export const { clearBoards, setBoards, setCurrentBoard } = boardsSlice.actions;
 export default boardsSlice.reducer;

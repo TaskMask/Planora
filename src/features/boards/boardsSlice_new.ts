@@ -16,22 +16,44 @@ const mockBoards: Board[] = [
     title: 'My First Board',
     description: 'A sample board to get you started',
     ownerId: 'demo-user',
-    members: ['demo-user'],
+    members: ['demo-user', 'alice', 'bob', 'charlie'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     isPublic: false,
     backgroundColor: '#3B82F6',
+    permissions: [],
+    allowComments: true,
+    allowVoting: true,
+    isArchived: false,
+    tags: [],
+    style: {
+      backgroundColor: '#3B82F6',
+      cardStyle: 'default',
+      fontSize: 'medium',
+      spacing: 'normal'
+    }
   },
   {
     id: '2',
     title: 'Team Project',
     description: 'Collaborative workspace for the team',
     ownerId: 'demo-user',
-    members: ['demo-user'],
+    members: ['demo-user', 'alice', 'bob', 'charlie', 'diana'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     isPublic: true,
     backgroundColor: '#10B981',
+    permissions: [],
+    allowComments: true,
+    allowVoting: true,
+    isArchived: false,
+    tags: [],
+    style: {
+      backgroundColor: '#10B981',
+      cardStyle: 'default',
+      fontSize: 'medium',
+      spacing: 'normal'
+    }
   },
 ];
 
@@ -67,6 +89,18 @@ export const createBoard = createAsyncThunk(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isPublic: false,
+        backgroundColor: '#3B82F6',
+        permissions: [],
+        allowComments: true,
+        allowVoting: true,
+        isArchived: false,
+        tags: [],
+        style: {
+          backgroundColor: '#3B82F6',
+          cardStyle: 'default',
+          fontSize: 'medium',
+          spacing: 'normal'
+        }
       };
       
       console.log('Board created:', newBoard);

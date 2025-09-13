@@ -10,6 +10,7 @@ interface DroppableListProps {
   cards: Card[];
   onAddCard: (listId: string, listTitle: string) => void;
   onCardClick: (card: Card) => void;
+  themeColor?: string;
 }
 
 export const DroppableList: React.FC<DroppableListProps> = ({
@@ -17,6 +18,7 @@ export const DroppableList: React.FC<DroppableListProps> = ({
   cards,
   onAddCard,
   onCardClick,
+  themeColor,
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: list.id,
@@ -30,13 +32,26 @@ export const DroppableList: React.FC<DroppableListProps> = ({
     .filter(card => card.listId === list.id)
     .sort((a, b) => a.position - b.position);
 
+  const getListStyle = () => {
+    if (themeColor && themeColor.includes('gradient')) {
+      return {
+        backgroundImage: themeColor,
+        opacity: 0.9
+      };
+    }
+    return {};
+  };
+
   return (
-    <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-lg p-3 w-72 flex-shrink-0">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-gray-100">{list.title}</h3>
+    <div 
+      className="backdrop-blur-md border border-white/30 rounded-xl p-4 w-72 flex-shrink-0"
+      style={getListStyle()}
+    >
+            <div className="flex items-center justify-between mb-3 px-1">
+        <h3 className="font-semibold text-gray-900 drop-shadow-sm">{list.title}</h3>
         <button 
           onClick={() => onAddCard(list.id, list.title)}
-          className="text-gray-400 hover:text-gray-200 p-1 rounded hover:bg-gray-700/50 transition-colors"
+          className="text-gray-900 hover:text-gray-700 p-2 rounded-lg hover:bg-white/20 transition-all duration-200"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -45,8 +60,8 @@ export const DroppableList: React.FC<DroppableListProps> = ({
       {/* Droppable area for cards */}
       <div 
         ref={setNodeRef}
-        className={`space-y-2 min-h-[100px] transition-colors ${
-          isOver ? 'bg-blue-500/10 border-blue-500/30 border-2 border-dashed rounded-lg p-2' : ''
+        className={`space-y-3 min-h-[120px] transition-all duration-200 ${
+          isOver ? 'bg-white/30 border-gray-400/50 border-2 border-dashed rounded-xl p-3' : ''
         }`}
       >
         <SortableContext items={sortedCards.map(card => card.id)} strategy={verticalListSortingStrategy}>
@@ -59,8 +74,8 @@ export const DroppableList: React.FC<DroppableListProps> = ({
               />
             ))
           ) : (
-            <div className={`text-center text-gray-400 text-sm py-8 transition-colors ${
-              isOver ? 'text-blue-400' : ''
+            <div className={`text-center text-sm py-8 transition-colors ${
+              isOver ? 'text-gray-900' : 'text-gray-900'
             }`}>
               {isOver ? 'Drop card here' : 'No cards yet'}
             </div>
@@ -71,7 +86,7 @@ export const DroppableList: React.FC<DroppableListProps> = ({
       {/* Add Card Button */}
       <button 
         onClick={() => onAddCard(list.id, list.title)}
-        className="w-full mt-3 py-2 text-gray-400 hover:text-gray-200 hover:bg-gray-700/50 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+        className="w-full mt-3 py-2 text-gray-900 hover:text-gray-700 hover:bg-white/20 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
       >
         <Plus className="h-4 w-4" />
         Add a card

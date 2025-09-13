@@ -38,9 +38,9 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
   };
 
   const getDueDateColor = (dueDate: string) => {
-    if (isOverdue(dueDate)) return 'text-red-400 bg-red-500/20';
-    if (isDueSoon(dueDate)) return 'text-amber-400 bg-amber-500/20';
-    return 'text-gray-400 bg-gray-600/30';
+    if (isOverdue(dueDate)) return 'text-red-300 bg-red-900/50';
+    if (isDueSoon(dueDate)) return 'text-amber-300 bg-amber-900/50';
+    return 'text-gray-300 bg-gray-700/50';
   };
 
   const checklistInfo = getCompletedTasks();
@@ -48,7 +48,7 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-gray-700/60 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-600/50 hover:shadow-lg hover:bg-gray-700/80 transition-all cursor-pointer group"
+      className="bg-gray-800 backdrop-blur-sm rounded-lg p-3 border border-gray-700/50 hover:bg-gray-700 transition-all cursor-pointer group"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
@@ -61,13 +61,13 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
                 title={`${card.priority} priority`}
               />
             )}
-            <h4 className="text-sm font-medium text-gray-100 leading-tight">
+            <h4 className="text-sm font-medium text-white leading-tight">
               {card.title}
             </h4>
           </div>
         </div>
         
-        <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-200 p-1 rounded hover:bg-gray-600/50 transition-all">
+        <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700/50 transition-all">
           <MoreHorizontal className="h-3 w-3" />
         </button>
       </div>
@@ -85,7 +85,7 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
             </span>
           ))}
           {card.labels.length > 3 && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-400 bg-gray-600/50">
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium text-gray-300 bg-gray-700/50">
               +{card.labels.length - 3}
             </span>
           )}
@@ -103,13 +103,13 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
       {checklistInfo && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-gray-300">
               <CheckSquare className="h-3 w-3" />
               <span>{checklistInfo.completed}/{checklistInfo.total}</span>
             </div>
-            <span className="text-xs text-gray-400">{checklistInfo.percentage}%</span>
+            <span className="text-xs text-gray-300">{checklistInfo.percentage}%</span>
           </div>
-          <div className="w-full bg-gray-600 rounded-full h-1">
+          <div className="w-full bg-gray-700 rounded-full h-1">
             <div
               className={`h-1 rounded-full transition-all duration-300 ${
                 checklistInfo.percentage === 100 ? 'bg-green-500' : 'bg-blue-500'
@@ -139,7 +139,7 @@ export const CardItem: React.FC<CardItemProps> = ({ card, onClick }) => {
           
           {/* Estimated Hours */}
           {card.estimatedHours && (
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-gray-300">
               <Clock className="h-3 w-3" />
               <span>{card.estimatedHours}h</span>
             </div>

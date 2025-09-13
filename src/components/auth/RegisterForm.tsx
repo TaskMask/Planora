@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
-import { Button, Input } from '../ui';
+import { Button, Input, Card } from '../ui';
 import { useAuth } from '../../hooks/useAuth';
 
 const registerSchema = z.object({
@@ -19,9 +17,13 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const RegisterForm: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+interface RegisterFormProps {
+  onSwitchToLogin?: () => void;
+}
+
+export const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSwitchToLogin
+}) => {
   const { signUp, loading } = useAuth();
   
   const {
@@ -41,107 +43,70 @@ export const RegisterForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Create Account
-        </h2>
-        <p className="text-gray-300 mt-2">Join Planora and start organizing your projects</p>
-      </div>
+    <Card className="w-full max-w-md mx-auto border-gray-700/50 bg-gray-800/80 backdrop-blur-xl">
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Create Account
+          </h2>
+          <p className="text-gray-400 mt-2 text-sm">Join Planora and start organizing your projects</p>
+        </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <User className="h-5 w-5 text-gray-400" />
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
+            label="Full Name"
             type="text"
-            placeholder="Full Name"
-            className="pl-10"
+            placeholder="Enter your full name"
             error={errors.name?.message}
             {...register('name')}
           />
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Mail className="h-5 w-5 text-gray-400" />
-          </div>
           <Input
+            label="Email"
             type="email"
-            placeholder="Email Address"
-            className="pl-10"
+            placeholder="Enter your email"
             error={errors.email?.message}
             {...register('email')}
           />
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Lock className="h-5 w-5 text-gray-400" />
-          </div>
           <Input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
-            className="pl-10 pr-10"
+            label="Password"
+            type="password"
+            placeholder="Create a password"
             error={errors.password?.message}
             {...register('password')}
           />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-200 transition-colors" />
-            ) : (
-              <Eye className="h-5 w-5 text-gray-400 hover:text-gray-200 transition-colors" />
-            )}
-          </button>
-        </div>
 
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Lock className="h-5 w-5 text-gray-400" />
-          </div>
           <Input
-            type={showConfirmPassword ? 'text' : 'password'}
-            placeholder="Confirm Password"
-            className="pl-10 pr-10"
+            label="Confirm Password"
+            type="password"
+            placeholder="Confirm your password"
             error={errors.confirmPassword?.message}
             {...register('confirmPassword')}
           />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-200 transition-colors" />
-            ) : (
-              <Eye className="h-5 w-5 text-gray-400 hover:text-gray-200 transition-colors" />
-            )}
-          </button>
-        </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          isLoading={loading}
-        >
-          Create Account
-        </Button>
-
-        <p className="text-center text-gray-300">
-          Already have an account?{' '}
-          <Link 
-            to="/auth/login" 
-            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          <Button
+            type="submit"
+            className="w-full"
+            isLoading={loading}
           >
-            Sign in
-          </Link>
-        </p>
-      </form>
-    </div>
+            Create Account
+          </Button>
+        </form>
+
+        {onSwitchToLogin && (
+          <p className="text-center text-sm text-gray-400">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Sign in
+            </button>
+          </p>
+        )}
+      </div>
+    </Card>
   );
 };
