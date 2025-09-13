@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavi      console.log('✅ Demo login complete!');
-      toast.success('Welcome to the demo! Explore the portfolio-ready features.');
-      
-      // The App.tsx useEffect will handle navigation automaticallym 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import type { AppDispatch } from '../store';
@@ -35,18 +32,8 @@ export const AuthPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<'choose' | 'login' | 'register'>('choose');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [demoLoginSuccess, setDemoLoginSuccess] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-
-  // Effect to handle navigation after demo login
-  useEffect(() => {
-    if (demoLoginSuccess) {
-      console.log('🚀 Demo login successful, forcing navigation...');
-      // Force navigation to boards page
-      window.location.href = '/boards';
-    }
-  }, [demoLoginSuccess]);
 
   const handleDemoLogin = async () => {
     try {
