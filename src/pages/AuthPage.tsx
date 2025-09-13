@@ -149,7 +149,28 @@ export const AuthPage: React.FC = () => {
       
     } catch (error) {
       console.error('❌ Google login failed:', error);
-      toast.error('Google login failed. Please try again.');
+      
+      // More detailed error logging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      
+      // Check for specific Firebase auth errors
+      const errorCode = (error as any)?.code;
+      let errorMessage = 'Google login failed. Please try again.';
+      
+      if (errorCode === 'auth/popup-blocked') {
+        errorMessage = 'Popup was blocked. Please enable popups and try again.';
+      } else if (errorCode === 'auth/popup-closed-by-user') {
+        errorMessage = 'Login was cancelled.';
+      } else if (errorCode === 'auth/unauthorized-domain') {
+        errorMessage = 'This domain is not authorized for Google login.';
+      } else if (errorCode === 'auth/operation-not-allowed') {
+        errorMessage = 'Google login is not enabled for this project.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
